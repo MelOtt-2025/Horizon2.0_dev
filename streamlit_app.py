@@ -6,7 +6,6 @@ import numpy as np
 import plotly.express as px
 
 
-import streamlit as st
 
 # App title
 st.set_page_config(page_title="Horizon Scanning Dashboard", layout="wide")
@@ -46,18 +45,53 @@ with tab1:
 # Tab 2: Model Selection
 with tab2:
     st.header("🧠 Model Selection")
-    model = st.selectbox("Select a model:", ["Strategic Environment", "Technology", "Trde", "Custom"])
+
+    model = st.selectbox("Select a model:", ["Strategic Environment", "Technology", "Aviation", "Custom"])
     year = st.selectbox("Select year:", ["2025", "2026", "2027", "2028"])
 
-    st.markdown("You can define variable weights below if using a custom model.")
-
     if model == "Custom":
-        x_vars = st.multiselect("Select X-axis variables", ["X1", "X2", "X3"])
-        y_vars = st.multiselect("Select Y-axis variables", ["Y1", "Y2", "Y3"])
-        z_vars = st.multiselect("Select Z-axis variables", ["Z1", "Z2", "Z3"])
+        st.markdown("### ⚖️ Set Variable Weights for Custom Model")
 
-        for var in x_vars + y_vars + z_vars:
-            st.slider(f"Weight for {var}", 0.0, 5.0, 1.0, key=var)
+        # Dummy variable names
+        x_vars = ["X_Factor1", "X_Factor2", "X_Factor3", "X_Factor4", "X_Factor5"]
+        y_vars = ["Y_Risk1", "Y_Risk2", "Y_Risk3", "Y_Risk4", "Y_Risk5"]
+        z_vars = ["Z_Cap1", "Z_Cap2", "Z_Cap3", "Z_Cap4", "Z_Cap5"]
+
+        # Sub-tabs for axis weights
+        x_tab, y_tab, z_tab = st.tabs(["X Axis Variables", "Y Axis Variables", "Z Axis Variables"])
+
+        with x_tab:
+            st.subheader("📈 X Axis - Connection Variables")
+            x_weights = {var: st.slider(f"Weight for {var}", 1, 10, 5) for var in x_vars}
+
+        with y_tab:
+            st.subheader("📉 Y Axis - Risk Variables")
+            y_weights = {var: st.slider(f"Weight for {var}", 1, 10, 5) for var in y_vars}
+
+        with z_tab:
+            st.subheader("🧪 Z Axis - Capability Variables")
+            z_weights = {var: st.slider(f"Weight for {var}", 1, 10, 5) for var in z_vars}
+
+        # Display weights in tables
+        st.markdown("### 🧾 Summary of Selected Weights (Tabular Format)")
+
+        x_df = pd.DataFrame(list(x_weights.items()), columns=["X Variable", "Weight"])
+        y_df = pd.DataFrame(list(y_weights.items()), columns=["Y Variable", "Weight"])
+        z_df = pd.DataFrame(list(z_weights.items()), columns=["Z Variable", "Weight"])
+
+        col1, col2, col3 = st.columns(3)
+        with col1:
+            st.markdown("#### X Axis Weights")
+            st.table(x_df)
+        with col2:
+            st.markdown("#### Y Axis Weights")
+            st.table(y_df)
+        with col3:
+            st.markdown("#### Z Axis Weights")
+            st.table(z_df)
+    else:
+        st.info("Preset models will be configured in future steps.")
+
 
 # Tab 3: Chart
 with tab3:
