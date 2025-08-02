@@ -46,90 +46,119 @@ with tab1:
 with tab2:
     st.header("🧠 Model Selection")
 
-    # Load preset model weights
-    preset_weights_path = os.path.join("data", "model_weights.csv")
-    preset_weights_df = pd.read_csv(preset_weights_path)
+    # Load preset weights
+    preset_path = os.path.join("data", "model_weights.csv")
+    if os.path.exists(preset_path):
+        preset_df = pd.read_csv(preset_path)
+    else:
+        preset_df = pd.DataFrame(columns=["Model", "Axis", "Variable", "Weight"])
 
-    # Select model and year
+    # Dropdowns
     model = st.selectbox("Select a model:", ["Strategic Environment", "Technology", "Aviation", "Custom"])
-    year = st.selectbox("Select year:", ["2025", "2026", "2027", "2028"])
+    year = st.selectbox("Select year:", [ "2025", "2026", "2027", "2028"])
 
     if model == "Custom":
         st.markdown("### ⚖️ Create a Custom Model")
 
-        # Let user name their model
-        custom_model_name = st.text_input("Enter a name for your custom model:", value="Custom_Aug2025")
+        model_name = st.text_input("Enter a name for your custom model:", value="Custom_Aug2025")
 
-        # Define dummy variables
-        x_vars = ["X_Factor1", "X_Factor2", "X_Factor3", "X_Factor4", "X_Factor5"]
-        y_vars = ["Y_Risk1", "Y_Risk2", "Y_Risk3", "Y_Risk4", "Y_Risk5"]
-        z_vars = ["Z_Cap1", "Z_Cap2", "Z_Cap3", "Z_Cap4", "Z_Cap5"]
+        x_vars = [f"X_Factor{i}" for i in range(1, 6)]
+        y_vars = [f"Y_Risk{i}" for i in range(1, 6)]
+        z_vars = [f"Z_Cap{i}" for i in range(1, 6)]
 
-        # Form for weight sliders
-        with st.form("custom_weight_form"):
-            x_tab, y_tab, z_tab = st.tabs(["X Axis Variables", "Y Axis Variables", "Z Axis Variables"])
-
-            with x_tab:
-                st.subheader("📈 X Axis")
-                x_weights = {var: st.slider(f"Weight for {var}", 1, 10, 5) for var in x_vars}
-
-            with y_tab:
-                st.subheader("📉 Y Axis")
-                y_weights = {var: st.slider(f"Weight for {var}", 1, 10, 5) for var in y_vars}
-
-            with z_tab:
-                st.subheader("🧪 Z Axis")
-                z_weights = {var: st.slider(f"Weight for {var}", 1, 10, 5) for var in z_vars}
-
+        with st.form("custom_form"):
+            xt, yt, zt = st.tabs(["X Axis", "Y Axis", "Z Axis"])
+            with xt:
+                x_weights = {v: st.slider(v, 1, 10, 5) for v in x_vars}
+            with yt:
+                y_weights = {v: st.slider(v, 1, 10, 5) for v in y_vars}
+            with zt:
+                z_weights = {v: st.slider(v, 1, 10, 5) for v in z_vars}
             submit = st.form_submit_button("💾 Save Custom Model")
 
+        custom_path = os.path.join("data", "custom_model_weights.csv")
+
         if submit:
-            # Combine all weights into a single dataframe
-            combined = (
-                [(custom_model_name, "X", var, wt) for var, wt in x_weights.items()] +
-                [(custom_model_name, "Y", var, wt) for var, wt in y_weights.items()] +
-                [(custom_model_name, "Z", var, wt) for var, wt in z_weights.items()]
+            rows = (
+                [(model_name, "X", k, v) for k, v in x_weights.items()] +
+                [(model_name, "Y", k, v) for k, v in y_weights.items()] +
+                [(model_name, "Z", k, v) for k, v in z_weights.items()]
             )
-            new_weights_df = pd.DataFrame(combined, columns=["Model", "Axis", "Variable", "Weight"])
+            new_df = pd.DataFrame(rows, columns=["Model", "Axis", "Variable", "Weight"])
 
-            # Save to custom model CSV
-            custom_weights_path = os.path.join("data", "custom_model_weights.csv")
-            if os.path.exists(custom_weights_path):
-                new_weights_df.to_csv(custom_weights_path, mode='a', header=False, index=False)
+            overwrite = True
+            if os.path.exists(custom_path):
+                existing = pd.read_csv(custom_path)
+                if model_name in existing["Model"].unique():
+                    overwrite = st.checkbox(f"⚠️ Model '{model_name}' exists. Overwrite?", value=False)
+
+                if overwrite:
+                    existing = existing[existing["Model"] != model_name]
+                    combined = pd.concat([existing, new_df])
+                    combined.to_csv(custom_path, index=False)
+                    st.success(f"✅ Saved and overwritten `{model_name}`.")
+                else:
+                    st.warning("❌ Save cancelled.")
             else:
-                new_weights_df.to_csv(custom_weights_path, mode='w', header=True, index=False)
+                new_df.to_csv(custom_path, index=False)
+                st.success(f"✅ Custom model `{model_name}` saved!")
 
-            st.success(f"✅ Custom model '{custom_model_name}' saved successfully!")
+            if overwrite:
+                st.markdown("#### Saved Weights")
+                col1, col2, col3 = st.columns(3)
+                with col1:
+                    st.write("X Axis")
+                    st.table(new_df.query("Axis == 'X'")[["Variable", "Weight"]])
+                with col2:
+                    st.write("Y Axis")
+                    st.table(new_df.query("Axis == 'Y'")[["Variable", "Weight"]])
+                with col3:
+                    st.write("Z Axis")
+                    st.table(new_df.query("Axis == 'Z'")[["Variable", "Weight"]])
 
-            # Show table
-            col1, col2, col3 = st.columns(3)
-            with col1:
-                st.markdown("#### X Axis Weights")
-                st.table(new_weights_df[new_weights_df["Axis"] == "X"][["Variable", "Weight"]])
-            with col2:
-                st.markdown("#### Y Axis Weights")
-                st.table(new_weights_df[new_weights_df["Axis"] == "Y"][["Variable", "Weight"]])
-            with col3:
-                st.markdown("#### Z Axis Weights")
-                st.table(new_weights_df[new_weights_df["Axis"] == "Z"][["Variable", "Weight"]])
+        # Load & manage saved custom models
+        st.divider()
+        st.markdown("### 🗂️ Manage Saved Custom Models")
+
+        if os.path.exists(custom_path):
+            saved_df = pd.read_csv(custom_path)
+            models = saved_df["Model"].unique().tolist()
+            if models:
+                selected = st.selectbox("📂 Load a Saved Custom Model", models)
+                st.markdown(f"#### 🔍 Weights for `{selected}`")
+                c1, c2, c3 = st.columns(3)
+                with c1:
+                    st.write("X Axis")
+                    st.table(saved_df.query("Model == @selected and Axis == 'X'")[["Variable", "Weight"]])
+                with c2:
+                    st.write("Y Axis")
+                    st.table(saved_df.query("Model == @selected and Axis == 'Y'")[["Variable", "Weight"]])
+                with c3:
+                    st.write("Z Axis")
+                    st.table(saved_df.query("Model == @selected and Axis == 'Z'")[["Variable", "Weight"]])
+
+                if st.button(f"🗑️ Delete `{selected}`"):
+                    saved_df = saved_df[saved_df["Model"] != selected]
+                    saved_df.to_csv(custom_path, index=False)
+                    st.success(f"✅ Deleted model `{selected}`. Refresh to update.")
+            else:
+                st.info("No saved custom models.")
+        else:
+            st.info("No saved custom model file found.")
 
     else:
         st.markdown(f"### 📋 Preconfigured Weights for `{model}` Model")
-
-        # Filter preset weights
-        model_df = preset_weights_df[preset_weights_df["Model"] == model]
-
-        col1, col2, col3 = st.columns(3)
-        with col1:
-            st.markdown("#### X Axis Weights")
-            st.table(model_df[model_df["Axis"] == "X"][["Variable", "Weight"]])
-        with col2:
-            st.markdown("#### Y Axis Weights")
-            st.table(model_df[model_df["Axis"] == "Y"][["Variable", "Weight"]])
-        with col3:
-            st.markdown("#### Z Axis Weights")
-            st.table(model_df[model_df["Axis"] == "Z"][["Variable", "Weight"]])
-
+        mdf = preset_df[preset_df["Model"] == model]
+        c1, c2, c3 = st.columns(3)
+        with c1:
+            st.write("X Axis")
+            st.table(mdf.query("Axis == 'X'")[["Variable", "Weight"]])
+        with c2:
+            st.write("Y Axis")
+            st.table(mdf.query("Axis == 'Y'")[["Variable", "Weight"]])
+        with c3:
+            st.write("Z Axis")
+            st.table(mdf.query("Axis == 'Z'")[["Variable", "Weight"]])
 
 # Tab 3: Chart
 with tab3:
