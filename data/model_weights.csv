@@ -1,0 +1,46 @@
+﻿Model,Axis,Variable,Weight
+Strategic Environment,X,X_Factor1,2
+Strategic Environment,X,X_Factor2,3
+Strategic Environment,X,X_Factor3,1
+Strategic Environment,X,X_Factor4,4
+Strategic Environment,X,X_Factor5,2
+Strategic Environment,Y,Y_Risk1,3
+Strategic Environment,Y,Y_Risk2,2
+Strategic Environment,Y,Y_Risk3,5
+Strategic Environment,Y,Y_Risk4,1
+Strategic Environment,Y,Y_Risk5,4
+Strategic Environment,Z,Z_Cap1,3
+Strategic Environment,Z,Z_Cap2,1
+Strategic Environment,Z,Z_Cap3,2
+Strategic Environment,Z,Z_Cap4,1
+Strategic Environment,Z,Z_Cap5,4
+Technology,X,X_Factor1,3
+Technology,X,X_Factor2,2
+Technology,X,X_Factor3,4
+Technology,X,X_Factor4,1
+Technology,X,X_Factor5,2
+Technology,Y,Y_Risk1,1
+Technology,Y,Y_Risk2,3
+Technology,Y,Y_Risk3,2
+Technology,Y,Y_Risk4,4
+Technology,Y,Y_Risk5,5
+Technology,Z,Z_Cap1,2
+Technology,Z,Z_Cap2,2
+Technology,Z,Z_Cap3,3
+Technology,Z,Z_Cap4,4
+Technology,Z,Z_Cap5,1
+Aviation,X,X_Factor1,5
+Aviation,X,X_Factor2,4
+Aviation,X,X_Factor3,3
+Aviation,X,X_Factor4,2
+Aviation,X,X_Factor5,1
+Aviation,Y,Y_Risk1,2
+Aviation,Y,Y_Risk2,4
+Aviation,Y,Y_Risk3,3
+Aviation,Y,Y_Risk4,5
+Aviation,Y,Y_Risk5,2
+Aviation,Z,Z_Cap1,1
+Aviation,Z,Z_Cap2,2
+Aviation,Z,Z_Cap3,3
+Aviation,Z,Z_Cap4,4
+Aviation,Z,Z_Cap5,5
