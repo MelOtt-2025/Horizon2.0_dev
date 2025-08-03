@@ -5,6 +5,61 @@ import os
 import numpy as np
 import plotly.express as px
 
+st.markdown(
+    """
+    <style>
+    /* Set body and html to black */
+    html, body {
+        background-color: #000000 !important;
+        color: #ffffff !important;
+    }
+
+    /* Streamlit main container background */
+    [data-testid="stAppViewContainer"] {
+        background-color: #000000 !important;
+    }
+
+    /* Main content block */
+    [data-testid="stVerticalBlock"] {
+        background-color: #000000 !important;
+    }
+
+    /* Sidebar background */
+    [data-testid="stSidebar"] {
+        background-color: #111111 !important;
+    }
+
+    /* Tabs and widget text */
+    [class^="st-"], [class*="st-"] {
+        color: #ffffff !important;
+        background-color: #000000 !important;
+    }
+
+    /* Table styling */
+    .stTable th, .stTable td {
+        color: #ffffff !important;
+        background-color: #111111 !important;
+    }
+
+    /* Text input labels and other controls */
+    label, div[data-testid="stText"], div[data-testid="stMarkdownContainer"] {
+        color: #ffffff !important;
+    }
+
+    /* Headings */
+    h1, h2, h3, h4, h5, h6 {
+        color: #ffffff !important;
+    }
+
+    /* Slider background */
+    .stSlider > div[data-baseweb="slider"] {
+        background: #333333 !important;
+    }
+    </style>
+    """,
+    unsafe_allow_html=True
+)
+
 
 
 # App title
@@ -17,6 +72,7 @@ tab1, tab2, tab3, tab4 = st.tabs([
     "Chart",
     "Results Drivers"
 ])
+
 
 # Sample data
 np.random.seed(42)
