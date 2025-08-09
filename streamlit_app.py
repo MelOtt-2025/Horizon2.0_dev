@@ -59,6 +59,35 @@ st.markdown(
     """,
     unsafe_allow_html=True
 )
+# Must be the first Streamlit command
+st.set_page_config(
+    page_title="Horizon Scanning Dashboard",
+    page_icon="📡",
+    layout="wide"
+)
+
+# Optional: keep your dark theme CSS (put yours here if you have it)
+# st.markdown("""<style> ... your dark CSS ... </style>""", unsafe_allow_html=True)
+
+# --- HEADER: Title + Logo ---
+hcol1, hcol2 = st.columns([0.82, 0.18])
+with hcol1:
+    st.markdown(
+        "<h1 style='margin-bottom:0.25rem; color:#ffffff;'>🌏 Horizon Scanning Dashboard</h1>",
+        unsafe_allow_html=True
+    )
+    st.caption("Interactive modelling • Visual analytics • Custom presets")
+with hcol2:
+    logo_path = os.path.join("static", "logo.png")  # <- put your logo here
+    if os.path.exists(logo_path):
+        st.image(logo_path, use_container_width=True)
+    else:
+        # fallback spacing so layout doesn't jump if logo missing
+        st.write("")
+
+# subtle divider under header
+st.markdown("<hr style='opacity:0.25;'>", unsafe_allow_html=True)
+# ====== END HEADER ======
 
 ###Sidebar menu
 st.sidebar.title("Menu")
