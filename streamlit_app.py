@@ -79,10 +79,10 @@ tab1, tab2, tab3, tab4 = st.tabs([
 
 # Sample data
 np.random.seed(42)
-n = 100
+n = 30
 df = pd.DataFrame({
-    "X": np.random.uniform(0, 100, n),
-    "Y": np.random.uniform(0, 100, n),
+    "X": np.random.uniform(-50, 50, n),
+    "Y": np.random.uniform(-50, 50, n),
     "Z": np.random.uniform(10, 50, n),
     "Category": np.random.choice(["Category A", "Category B", "Category C"], n),
     "Label": [f"Point {i}" for i in range(n)]
@@ -233,35 +233,46 @@ with tab2:
 with tab3:
     st.header("📊 Chart")
     st.markdown("This section will display the 3D bubble chart once data and model selections are made.")
-    st.markdown("To be implemented: Bubble plot visualization using Plotly or Altair.")
 
     # Category selection
     categories = df["Category"].unique().tolist()
     selected_cats = st.multiselect("Select Categories:", categories, default=categories)
 
-# Filter data
+    # Filter data
     filtered_df = df[df["Category"].isin(selected_cats)]
 
-# Create bubble chart
+    # Create bubble chart
     fig = px.scatter(
-    filtered_df, x="X", y="Y", size="Z", color="Category",
-    hover_name="Label", size_max=40
-)
+        filtered_df,
+        x="X", y="Y", size="Z", color="Category",
+        hover_name="Label", size_max=40
+    )
 
+    # Update layout for quadrants
     fig.update_layout(
-    title="Interactive Bubble Chart",
-    xaxis=dict(range=[0, 100], zeroline=True, zerolinewidth=2, zerolinecolor='gray'),
-    yaxis=dict(range=[0, 100], zeroline=True, zerolinewidth=2, zerolinecolor='gray'),
-    plot_bgcolor='rgba(0,0,0,0)',
-    paper_bgcolor='rgba(0,0,0,0)'
-)
+        title="Interactive Bubble Chart (Quadrants)",
+        xaxis=dict(
+            range=[-50, 50],
+            zeroline=True,
+            zerolinewidth=2,
+            zerolinecolor='gray',
+            title="X Axis"
+        ),
+        yaxis=dict(
+            range=[-50, 50],
+            zeroline=True,
+            zerolinewidth=2,
+            zerolinecolor='gray',
+            title="Y Axis"
+        ),
+        plot_bgcolor='rgba(0,0,0,0)',
+        paper_bgcolor='rgba(0,0,0,0)',
+        height=800,  # Increase chart height for better visibility
+        width=800    # Optional: Force a larger width
+    )
 
-# Show chart
+    # Show chart
     st.plotly_chart(fig, use_container_width=True)
-
-
-
-
 
 # Tab 4: Results Drivers
 with tab4:
