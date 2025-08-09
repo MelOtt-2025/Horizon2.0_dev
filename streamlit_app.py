@@ -266,11 +266,83 @@ with tab3:
 # Tab 4: Results Drivers
 with tab4:
     st.header("🔍 Results Drivers")
-    st.markdown("""
-    This section shows the key drivers behind the results. You’ll be able to explore contributions
-    of different factors to the model outcomes and drill down into regional or thematic trends.
-    """)
-    st.markdown("To be implemented: Driver ranking and factor breakdown visualization.")
+    st.markdown("Explore the key drivers behind results by geography and metric.")
+
+    # ---------- Dummy data (replace with your real data) ----------
+    import pandas as pd
+    import plotly.express as px
+
+    # Map data (lat/lon for 5 fake locations)
+    map_df = pd.DataFrame({
+        "Region": ["Sydney", "Melbourne", "Brisbane", "Perth", "Adelaide"],
+        "lat": [-33.8688, -37.8136, -27.4698, -31.9505, -34.9285],
+        "lon": [151.2093, 144.9631, 153.0251, 115.8605, 138.6007],
+        "value": [50, 70, 40, 55, 35]
+    })
+
+    # Bar chart data
+    bar_df = pd.DataFrame({
+        "Driver": [f"Driver {i}" for i in range(1, 6)],
+        "Contribution": [30, 45, 20, 55, 40]
+    })
+
+    # Line chart data
+    line_df = pd.DataFrame({
+        "Month": [f"2025-{m:02d}" for m in range(1, 13)],
+        "Index": [80, 82, 79, 85, 88, 90, 87, 92, 95, 97, 99, 101]
+    })
+
+    # Pie chart data
+    pie_df = pd.DataFrame({
+        "Category": ["A", "B", "C", "D"],
+        "Share": [35, 25, 20, 20]
+    })
+
+    # ---------- Layout: row 1 (Map | Bar) ----------
+    c1, c2 = st.columns(2)
+
+    with c1:
+        st.subheader("🗺️ Map (placeholder)")
+        fig_map = px.scatter_mapbox(
+            map_df, lat="lat", lon="lon", size="value", color="Region",
+            hover_name="Region", zoom=3, height=420
+        )
+        fig_map.update_layout(mapbox_style="open-street-map", margin=dict(l=0, r=0, t=0, b=0))
+        st.plotly_chart(fig_map, use_container_width=True)
+
+    with c2:
+        st.subheader("📊 Bar Chart (placeholder)")
+        fig_bar = px.bar(
+            bar_df, x="Driver", y="Contribution", text="Contribution",
+            title=None, template="plotly_dark"
+        )
+        fig_bar.update_traces(textposition="outside")
+        fig_bar.update_layout(yaxis_title="Contribution", xaxis_title="Driver", height=420)
+        st.plotly_chart(fig_bar, use_container_width=True)
+
+    # ---------- Layout: row 2 (Line | Pie) ----------
+    c3, c4 = st.columns(2)
+
+    with c3:
+        st.subheader("📈 Line Chart (placeholder)")
+        fig_line = px.line(
+            line_df, x="Month", y="Index", markers=True, title=None, template="plotly_dark"
+        )
+        fig_line.update_layout(yaxis_title="Index", xaxis_title="Month", height=420)
+        st.plotly_chart(fig_line, use_container_width=True)
+
+    with c4:
+        st.subheader("🥧 Pie Chart (placeholder)")
+        fig_pie = px.pie(
+            pie_df, names="Category", values="Share", hole=0.3 , template="plotly_dark"
+        )
+        fig_pie.update_layout(height=420)
+        st.plotly_chart(fig_pie, use_container_width=True)
+
+ 
+    # Apply dark theme to all plots
+for f in [fig_map, fig_bar, fig_line, fig_pie]:
+    f.update_layout(template="plotly_dark")
 
 
 
