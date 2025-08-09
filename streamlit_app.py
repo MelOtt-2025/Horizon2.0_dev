@@ -122,7 +122,7 @@ with tab1:
     st.markdown("""
     This section provides an overview of horizon scanning data, including structured and unstructured inputs.
     You can upload datasets, define axes, and explore the evolving landscape of strategic themes. 
-                We will do a descrition of what horizon scanning is and how it can be used to identify trends and opportunities.
+    We will do a descrition of what horizon scanning is and how it can be used to identify trends and opportunities.
     Horizon scanning is a systematic process of identifying and analyzing emerging trends, risks, and opportunities that
     may impact an organization or sector in the future. It involves gathering information from various sources,
     including scientific literature, news articles, expert opinions, and social media, to detect patterns and
