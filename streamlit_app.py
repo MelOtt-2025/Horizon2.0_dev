@@ -69,24 +69,23 @@ st.set_page_config(
 # Optional: keep your dark theme CSS (put yours here if you have it)
 # st.markdown("""<style> ... your dark CSS ... </style>""", unsafe_allow_html=True)
 
-# --- HEADER: Title + Logo ---
-hcol1, hcol2 = st.columns([0.82, 0.18])
+# --- HEADER: Title + Smaller Logo ---
+hcol1, hcol2 = st.columns([0.85, 0.15])  # tweak ratios as you like
 with hcol1:
     st.markdown(
-        "<h1 style='margin-bottom:0.25rem; color:#ffffff;'>🌏 Horizon Scanning Dashboard</h1>",
+        "<h1 style='margin:0; color:#ffffff;'>🌏 Horizon Scanning Dashboard</h1>"
+        "<div style='color:#ccc;'>Interactive modelling • Visual analytics • Custom presets</div>",
         unsafe_allow_html=True
     )
-    st.caption("Interactive modelling • Visual analytics • Custom presets")
 with hcol2:
-    logo_path = os.path.join("static", "SAS_logo.png")  # <- put your logo here
+    logo_path = os.path.join("static", "SAS_logo.png")  # put your file here
     if os.path.exists(logo_path):
-        st.image(logo_path, use_container_width=True)
+        # 👇 control logo size with width (e.g., 80 px)
+        st.image(logo_path, width=80)
     else:
-        # fallback spacing so layout doesn't jump if logo missing
-        st.write("")
+        st.empty()
 
-# subtle divider under header
-st.markdown("<hr style='opacity:0.25;'>", unsafe_allow_html=True)
+st.markdown("<hr style='opacity:0.25; margin-top:0.5rem;'>", unsafe_allow_html=True)
 # ====== END HEADER ======
 
 ###Sidebar menu
