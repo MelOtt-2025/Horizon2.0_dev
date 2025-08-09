@@ -134,15 +134,15 @@ with tab2:
 
             with col_x:
                 st.subheader("📈 X Axis")
-                x_weights = {v: st.slider(f"{v}", 1, 10, 5, key=f"x_{v}") for v in x_vars}
+                x_weights = {v: st.slider(f"{v}", 0, 10, 0, key=f"x_{v}") for v in x_vars}
 
             with col_y:
                 st.subheader("📉 Y Axis")
-                y_weights = {v: st.slider(f"{v}", 1, 10, 5, key=f"y_{v}") for v in y_vars}
+                y_weights = {v: st.slider(f"{v}", 0, 10, 0, key=f"y_{v}") for v in y_vars}
 
             with col_z:
                 st.subheader("🧪 Z Axis")
-                z_weights = {v: st.slider(f"{v}", 1, 10, 5, key=f"z_{v}") for v in z_vars}
+                z_weights = {v: st.slider(f"{v}", 0, 10, 0, key=f"z_{v}") for v in z_vars}
 
             submit = st.form_submit_button("💾 Save Custom Model")
 
