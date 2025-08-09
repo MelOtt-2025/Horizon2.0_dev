@@ -117,7 +117,7 @@ with tab2:
 
     # Dropdowns
     model = st.selectbox("Select a model:", ["Strategic Environment", "Technology", "Aviation", "Custom"])
-    year = st.selectbox("Select year:", [ "2025", "2026", "2027", "2028"])
+    year = st.selectbox("Select year:", ["2025", "2026", "2027", "2028"])
 
     if model == "Custom":
         st.markdown("### ⚖️ Create a Custom Model")
@@ -128,14 +128,22 @@ with tab2:
         y_vars = [f"Y_Risk{i}" for i in range(1, 6)]
         z_vars = [f"Z_Cap{i}" for i in range(1, 6)]
 
+        # One form, three columns: X, Y, Z
         with st.form("custom_form"):
-            xt, yt, zt = st.tabs(["X Axis", "Y Axis", "Z Axis"])
-            with xt:
-                x_weights = {v: st.slider(v, 1, 10, 5) for v in x_vars}
-            with yt:
-                y_weights = {v: st.slider(v, 1, 10, 5) for v in y_vars}
-            with zt:
-                z_weights = {v: st.slider(v, 1, 10, 5) for v in z_vars}
+            col_x, col_y, col_z = st.columns(3)
+
+            with col_x:
+                st.subheader("📈 X Axis")
+                x_weights = {v: st.slider(f"{v}", 1, 10, 5, key=f"x_{v}") for v in x_vars}
+
+            with col_y:
+                st.subheader("📉 Y Axis")
+                y_weights = {v: st.slider(f"{v}", 1, 10, 5, key=f"y_{v}") for v in y_vars}
+
+            with col_z:
+                st.subheader("🧪 Z Axis")
+                z_weights = {v: st.slider(f"{v}", 1, 10, 5, key=f"z_{v}") for v in z_vars}
+
             submit = st.form_submit_button("💾 Save Custom Model")
 
         custom_path = os.path.join("data", "custom_model_weights.csv")
@@ -156,7 +164,7 @@ with tab2:
 
                 if overwrite:
                     existing = existing[existing["Model"] != model_name]
-                    combined = pd.concat([existing, new_df])
+                    combined = pd.concat([existing, new_df], ignore_index=True)
                     combined.to_csv(custom_path, index=False)
                     st.success(f"✅ Saved and overwritten `{model_name}`.")
                 else:
@@ -167,14 +175,14 @@ with tab2:
 
             if overwrite:
                 st.markdown("#### Saved Weights")
-                col1, col2, col3 = st.columns(3)
-                with col1:
+                c1, c2, c3 = st.columns(3)
+                with c1:
                     st.write("X Axis")
                     st.table(new_df.query("Axis == 'X'")[["Variable", "Weight"]])
-                with col2:
+                with c2:
                     st.write("Y Axis")
                     st.table(new_df.query("Axis == 'Y'")[["Variable", "Weight"]])
-                with col3:
+                with c3:
                     st.write("Z Axis")
                     st.table(new_df.query("Axis == 'Z'")[["Variable", "Weight"]])
 
@@ -221,7 +229,6 @@ with tab2:
         with c3:
             st.write("Z Axis")
             st.table(mdf.query("Axis == 'Z'")[["Variable", "Weight"]])
-
 # Tab 3: Chart
 with tab3:
     st.header("📊 Chart")
