@@ -256,14 +256,16 @@ with tab3:
             zeroline=True,
             zerolinewidth=2,
             zerolinecolor='gray',
-            title="X Axis"
+            title="X Axis",
+            showgrid=False
         ),
         yaxis=dict(
             range=[-50, 50],
             zeroline=True,
             zerolinewidth=2,
             zerolinecolor='gray',
-            title="Y Axis"
+            title="Y Axis",
+            showgrid=False
         ),
         plot_bgcolor='rgba(0,0,0,0)',
         paper_bgcolor='rgba(0,0,0,0)',
