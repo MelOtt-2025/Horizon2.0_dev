@@ -60,7 +60,10 @@ st.markdown(
     unsafe_allow_html=True
 )
 
-
+###Sidebar menu
+st.sidebar.title("Menu")
+st.sidebar.write("Add in buttons and sliders etc")
+sidebar_input = st.sidebar.text_input("Write something here")
 
 # App title
 st.set_page_config(page_title="Horizon Scanning Dashboard", layout="wide")
@@ -97,6 +100,9 @@ with tab1:
         import pandas as pd
         df = pd.read_csv(uploaded_file)
         st.dataframe(df.head())
+
+    if sidebar_input:
+        st.write(f"you have written:{sidebar_input}")
 
 # Tab 2: Model Selection
 with tab2:
