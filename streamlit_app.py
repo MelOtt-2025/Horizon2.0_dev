@@ -78,7 +78,7 @@ with hcol1:
     )
     st.caption("Interactive modelling • Visual analytics • Custom presets")
 with hcol2:
-    logo_path = os.path.join("static", "logo.png")  # <- put your logo here
+    logo_path = os.path.join("static", "SAS_logo.png")  # <- put your logo here
     if os.path.exists(logo_path):
         st.image(logo_path, use_container_width=True)
     else:
