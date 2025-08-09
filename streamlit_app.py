@@ -81,7 +81,7 @@ with hcol2:
     logo_path = os.path.join("static", "SAS_logo.png")  # put your file here
     if os.path.exists(logo_path):
         # 👇 control logo size with width (e.g., 80 px)
-        st.image(logo_path, width=80)
+        st.image(logo_path, width=100)
     else:
         st.empty()
 
@@ -121,7 +121,15 @@ with tab1:
     st.header("🌐 Horizon Scanning")
     st.markdown("""
     This section provides an overview of horizon scanning data, including structured and unstructured inputs.
-    You can upload datasets, define axes, and explore the evolving landscape of strategic themes.
+    You can upload datasets, define axes, and explore the evolving landscape of strategic themes. 
+                We will do a descrition of what horizon scanning is and how it can be used to identify trends and opportunities.
+    Horizon scanning is a systematic process of identifying and analyzing emerging trends, risks, and opportunities that
+    may impact an organization or sector in the future. It involves gathering information from various sources,
+    including scientific literature, news articles, expert opinions, and social media, to detect patterns and
+    signals of change. By systematically scanning the horizon, organizations can proactively adapt their strategies,
+    make informed decisions, and seize opportunities before they become mainstream. This process is crucial for
+    staying ahead in a rapidly changing world, enabling organizations to anticipate challenges and leverage emerging
+    trends to their advantage.
     """)
     uploaded_file = st.file_uploader("Upload CSV data for scanning", type="csv")
     if uploaded_file:
