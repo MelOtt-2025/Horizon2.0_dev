@@ -91,7 +91,7 @@ st.markdown("<hr style='opacity:0.25; margin-top:0.5rem;'>", unsafe_allow_html=T
 ###Sidebar menu
 st.sidebar.title("Menu")
 st.sidebar.write("Add in buttons and sliders etc")
-sidebar_input = st.sidebar.text_input("Write something here")
+sidebar_input = st.sidebar.text_input("Write something here to show in main page")
 
 # App title
 st.set_page_config(page_title="Horizon Scanning Dashboard", layout="wide")
