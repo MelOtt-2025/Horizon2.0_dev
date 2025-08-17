@@ -176,6 +176,7 @@ with hcol2:
 
 st.markdown("<hr style='opacity:0.25; margin-top:0.5rem;'>", unsafe_allow_html=True)
 # ====== END HEADER ======
+raw_data = pd.read_csv(os.path.join("data", "ALL_RAW.csv"))
 
 ###Sidebar menu
 st.sidebar.title("Menu")
@@ -186,8 +187,9 @@ sidebar_input = st.sidebar.text_input("Write something here to show in main page
 st.set_page_config(page_title="Horizon Scanning Dashboard", layout="wide")
 
 # Define tab structure
-tab1, tab2, tab3, tab4 = st.tabs([
+tab1, tab2, tab3, tab4, tab5 = st.tabs([
     "Horizon Scanning",
+    "Data Preparation",
     "Model Selection",
     "Chart",
     "Results Drivers"
@@ -229,8 +231,51 @@ with tab1:
     if sidebar_input:
         st.write(f"you have written:{sidebar_input}")
 
-# Tab 2: Model Selection
+# Tab 2: Data Preparation
 with tab2:
+    st.header("Data Preparation")
+
+    # Show variable summary
+    st.subheader("Variable Summary")
+    summary = []
+    for col in raw_data.columns:
+        if np.issubdtype(raw_data[col].dtype, np.number):
+            stats = {
+                "Variable": col,
+                "Type": "Numeric",
+                "Min": np.nanmin(raw_data[col]),
+                "Max": np.nanmax(raw_data[col]),
+                "Mean": np.nanmean(raw_data[col]),
+                "Std": np.nanstd(raw_data[col])
+            }
+        else:
+            stats = {
+                "Variable": col,
+                "Type": "Categorical",
+                "Min": "",
+                "Max": "",
+                "Mean": "",
+                "Std": ""
+            }
+        summary.append(stats)
+    st.dataframe(pd.DataFrame(summary))
+
+    # Data processing
+    st.subheader("Process Variables")
+    processed_data = raw_data.copy()
+    for col in raw_data.columns:
+        if np.issubdtype(raw_data[col].dtype, np.number):
+            if st.button(f"Standardize {col}"):
+                processed_data[col] = (raw_data[col] - raw_data[col].mean()) / raw_data[col].std()
+        else:
+            if st.button(f"Assign Levels to {col}"):
+                processed_data[col] = raw_data[col].astype('category').cat.codes
+
+    st.subheader("Processed Data Preview")
+    st.dataframe(processed_data.head())
+
+# Tab 3: Model Selection
+with tab3:
     st.header("🧠 Model Selection")
 
     # Load preset weights
@@ -354,8 +399,8 @@ with tab2:
         with c3:
             st.write("Z Axis")
             st.table(mdf.query("Axis == 'Z'")[["Variable", "Weight"]])
-# Tab 3: Chart
-with tab3:
+# Tab 4: Chart
+with tab4:
     st.header("📊 Chart")
     st.markdown("This section will display the 3D bubble chart once data and model selections are made.")
 
@@ -401,8 +446,8 @@ with tab3:
     # Show chart
     st.plotly_chart(fig, use_container_width=True)
 
-# Tab 4: Results Drivers
-with tab4:
+# Tab 5: Results Drivers
+with tab5:
     st.header("🔍 Results Drivers")
     st.markdown("Explore the key drivers behind results by geography and metric.")
 
