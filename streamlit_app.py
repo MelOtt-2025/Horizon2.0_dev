@@ -55,6 +55,95 @@ st.markdown(
     .stSlider > div[data-baseweb="slider"] {
         background: #333333 !important;
     }
+
+    /* Tab styling for better visual distinction */
+    .stTabs [data-baseweb="tab-list"] {
+        gap: 8px;
+        background-color: #000000 !important;
+        padding: 10px 0;
+        border-bottom: 2px solid #333333;
+    }
+
+    .stTabs [data-baseweb="tab"] {
+        height: 50px;
+        padding: 0px 24px;
+        background-color: #1a1a1a !important;
+        border: 2px solid #333333 !important;
+        border-radius: 8px 8px 0px 0px !important;
+        color: #cccccc !important;
+        font-weight: 500 !important;
+        transition: all 0.3s ease !important;
+        margin-right: 4px;
+    }
+
+    .stTabs [data-baseweb="tab"]:hover {
+        background-color: #2a2a2a !important;
+        border-color: #555555 !important;
+        color: #ffffff !important;
+        transform: translateY(-2px);
+    }
+
+    .stTabs [aria-selected="true"] {
+        background-color: #333333 !important;
+        border-color: #666666 !important;
+        color: #ffffff !important;
+        border-bottom: 2px solid #333333 !important;
+    }
+
+    /* Tab content area */
+    .stTabs [data-baseweb="tab-panel"] {
+        background-color: transparent !important;
+        border: none !important;
+        padding: 20px !important;
+        margin-top: -2px;
+    }
+
+    /* Remove background from tab content containers */
+    .stTabs [data-baseweb="tab-panel"] > div {
+        background-color: transparent !important;
+        background: transparent !important;
+    }
+
+    /* Target any nested containers within tabs */
+    .stTabs [data-baseweb="tab-panel"] * {
+        background-color: transparent !important;
+    }
+
+    /* Override Streamlit's default container backgrounds within tabs */
+    .stTabs .element-container {
+        background-color: transparent !important;
+    }
+
+    .stTabs .stMarkdown {
+        background-color: transparent !important;
+    }
+
+    /* Remove black backgrounds from text elements in tabs */
+    .stTabs [data-testid="stMarkdownContainer"] {
+        background-color: transparent !important;
+        background: transparent !important;
+    }
+
+    .stTabs [data-testid="stText"] {
+        background-color: transparent !important;
+        background: transparent !important;
+    }
+
+    .stTabs [data-testid="stHeader"] {
+        background-color: transparent !important;
+        background: transparent !important;
+    }
+
+    /* Remove backgrounds from all block elements in tabs */
+    .stTabs div[data-testid="block-container"] {
+        background-color: transparent !important;
+        background: transparent !important;
+    }
+
+    .stTabs div[data-testid="stVerticalBlock"] {
+        background-color: transparent !important;
+        background: transparent !important;
+    }
     </style>
     """,
     unsafe_allow_html=True
