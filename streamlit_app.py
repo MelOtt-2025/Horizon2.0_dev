@@ -4,7 +4,49 @@ import plotly as pl
 import os
 import numpy as np
 import plotly.express as px
+from datetime import datetime
 
+# ----------------- MUST BE FIRST STREAMLIT CALL -----------------
+st.set_page_config(
+    page_title="Horizon Scanning Dashboard",
+    page_icon="📡",
+    layout="wide"
+)
+# ----------------------------------------------------------------
+
+# ---- Default action guessers ----
+def _likely_identifier(col_name: str) -> bool:
+    col = str(col_name).lower()
+    return any(k in col for k in ["id", "uuid", "guid", "email", "phone", "mobile", "account", "postcode", "zip", "ssn"])
+
+def _guess_action(col_name: str, s: pd.Series) -> str:
+    # Nothing there → do nothing
+    if s.dropna().empty:
+        return "None"
+
+    # Obvious IDs/keys → do nothing
+    if _likely_identifier(col_name):
+        return "None"
+
+    n = len(s)
+    nunique = s.nunique(dropna=True)
+
+    if np.issubdtype(s.dtype, np.number):
+        # Constant numeric → do nothing
+        if nunique <= 1:
+            return "None"
+        # Low-cardinality numeric (binary/few levels) → Encode
+        if nunique <= 2 or nunique <= max(10, int(0.03 * n)):
+            return "Encode"
+        # Otherwise treat as continuous → Standardize
+        return "Standardize"
+    else:
+        # Extremely high-cardinality text → do nothing
+        if nunique > max(100, int(0.5 * n)):
+            return "None"
+        return "Encode"
+
+# ----------------- DARK THEME CSS -----------------
 st.markdown(
     """
     <style>
@@ -148,15 +190,6 @@ st.markdown(
     """,
     unsafe_allow_html=True
 )
-# Must be the first Streamlit command
-st.set_page_config(
-    page_title="Horizon Scanning Dashboard",
-    page_icon="📡",
-    layout="wide"
-)
-
-# Optional: keep your dark theme CSS (put yours here if you have it)
-# st.markdown("""<style> ... your dark CSS ... </style>""", unsafe_allow_html=True)
 
 # --- HEADER: Title + Smaller Logo ---
 hcol1, hcol2 = st.columns([0.85, 0.15])  # tweak ratios as you like
@@ -169,22 +202,30 @@ with hcol1:
 with hcol2:
     logo_path = os.path.join("static", "SAS_logo.png")  # put your file here
     if os.path.exists(logo_path):
-        # 👇 control logo size with width (e.g., 80 px)
+        # control logo size with width
         st.image(logo_path, width=100)
     else:
         st.empty()
 
 st.markdown("<hr style='opacity:0.25; margin-top:0.5rem;'>", unsafe_allow_html=True)
 # ====== END HEADER ======
-raw_data = pd.read_csv(os.path.join("data", "ALL_RAW.csv"))
 
-###Sidebar menu
+# Load raw dataset
+raw_data_path = os.path.join("data", "ALL_RAW.csv")
+if os.path.exists(raw_data_path):
+    raw_data = pd.read_csv(raw_data_path)
+else:
+    st.warning("⚠️ data/ALL_RAW.csv not found. Using an empty DataFrame.")
+    raw_data = pd.DataFrame()
+
+# Keep a pristine copy for reset
+if "original_raw_data" not in st.session_state:
+    st.session_state.original_raw_data = raw_data.copy()
+
+# Sidebar menu
 st.sidebar.title("Menu")
 st.sidebar.write("Add in buttons and sliders etc")
 sidebar_input = st.sidebar.text_input("Write something here to show in main page")
-
-# App title
-st.set_page_config(page_title="Horizon Scanning Dashboard", layout="wide")
 
 # Define tab structure
 tab1, tab2, tab3, tab4, tab5 = st.tabs([
@@ -195,8 +236,7 @@ tab1, tab2, tab3, tab4, tab5 = st.tabs([
     "Results Drivers"
 ])
 
-
-# Sample data
+# Sample data for Chart tab default
 np.random.seed(42)
 n = 30
 df = pd.DataFrame({
@@ -224,57 +264,131 @@ with tab1:
     """)
     uploaded_file = st.file_uploader("Upload CSV data for scanning", type="csv")
     if uploaded_file:
-        import pandas as pd
         df = pd.read_csv(uploaded_file)
         st.dataframe(df.head())
 
     if sidebar_input:
-        st.write(f"you have written:{sidebar_input}")
+        st.write(f"You have written: {sidebar_input}")
 
-# Tab 2: Data Preparation
+# Tab 2: Data Preparation (with default action guesser + save + reset)
 with tab2:
     st.header("Data Preparation")
 
-    # Show variable summary
-    st.subheader("Variable Summary")
-    summary = []
+    # ------ Build summary table with suggested actions ------
+    rows = []
     for col in raw_data.columns:
-        if np.issubdtype(raw_data[col].dtype, np.number):
-            stats = {
+        s = raw_data[col]
+        if np.issubdtype(s.dtype, np.number):
+            row = {
                 "Variable": col,
                 "Type": "Numeric",
-                "Min": np.nanmin(raw_data[col]),
-                "Max": np.nanmax(raw_data[col]),
-                "Mean": np.nanmean(raw_data[col]),
-                "Std": np.nanstd(raw_data[col])
+                "Min": float(np.nanmin(s)) if s.notna().any() else None,
+                "Max": float(np.nanmax(s)) if s.notna().any() else None,
+                "Mean": float(np.nanmean(s)) if s.notna().any() else None,
+                "Std": float(np.nanstd(s)) if s.notna().any() else None,
             }
         else:
-            stats = {
+            row = {
                 "Variable": col,
                 "Type": "Categorical",
                 "Min": "",
                 "Max": "",
                 "Mean": "",
-                "Std": ""
+                "Std": "",
             }
-        summary.append(stats)
-    st.dataframe(pd.DataFrame(summary))
+        row["Action"] = _guess_action(col, s)
+        rows.append(row)
 
-    # Data processing
-    st.subheader("Process Variables")
-    processed_data = raw_data.copy()
-    for col in raw_data.columns:
-        if np.issubdtype(raw_data[col].dtype, np.number):
-            if st.button(f"Standardize {col}"):
-                processed_data[col] = (raw_data[col] - raw_data[col].mean()) / raw_data[col].std()
-        else:
-            if st.button(f"Assign Levels to {col}"):
-                processed_data[col] = raw_data[col].astype('category').cat.codes
+    summary_df = pd.DataFrame(rows)
+
+    st.subheader("Variable Summary")
+
+    left, right = st.columns([3, 1], vertical_alignment="top")
+
+    with left:
+        edited = st.data_editor(
+            summary_df,
+            key="var_summary_editor",
+            hide_index=True,
+            column_config={
+                "Action": st.column_config.SelectboxColumn(
+                    "Action",
+                    options=["None", "Standardize", "Encode"],
+                    help="Suggested by heuristics; override if needed."
+                )
+            }
+        )
+
+    with right:
+        st.markdown("### Process Variables")
+        st.caption("Review/override **Action** in the table, then click **Apply**.")
+        apply_clicked = st.button("Apply selected actions", use_container_width=True)
+
+        st.divider()
+        st.markdown("### Save / Reset")
+        enable_save = st.checkbox("Enable save to CSV")
+        default_name = f"processed_{datetime.now().strftime('%Y%m%d_%H%M%S')}.csv"
+        save_name = st.text_input("Filename (saved to data/)", value=default_name, disabled=not enable_save)
+        do_save = st.button("💾 Save processed CSV", disabled=not enable_save, use_container_width=True)
+        do_reset = st.button("♻️ Reset to original", type="secondary", use_container_width=True)
+
+    # Initialize processed_data
+    if "processed_data" not in st.session_state:
+        st.session_state.processed_data = raw_data.copy()
+
+    # Apply actions
+    if apply_clicked:
+        df_proc = st.session_state.processed_data.copy()
+
+        for _, row in edited.iterrows():
+            col = row["Variable"]
+            act = row["Action"]
+            typ = row["Type"]
+
+            if act == "Standardize":
+                if typ == "Numeric":
+                    series = df_proc[col]
+                    sd = series.std(skipna=True)
+                    if pd.notna(sd) and sd != 0:
+                        df_proc[col] = (series - series.mean(skipna=True)) / sd
+                    else:
+                        st.warning(f"Skipped standardizing '{col}' (std is 0 or NaN).")
+                else:
+                    st.warning(f"'{col}' is {typ}; standardize skipped.")
+
+            elif act == "Encode":
+                # Encode categoricals; for numeric low-cardinality, encode as strings → categories
+                if typ == "Categorical":
+                    df_proc[col] = df_proc[col].astype("category").cat.codes
+                else:
+                    df_proc[col] = df_proc[col].astype(str).astype("category").cat.codes
+
+            # 'None' → do nothing
+
+        st.session_state.processed_data = df_proc
+        st.success("Processing complete.")
+
+    # Save
+    if do_save:
+        os.makedirs("data", exist_ok=True)
+        target = os.path.join("data", save_name)
+        try:
+            st.session_state.processed_data.to_csv(target, index=False)
+            st.success(f"✅ Saved processed data to `{target}`")
+        except Exception as e:
+            st.error(f"Failed to save: {e}")
+
+    # Reset
+    if do_reset:
+        st.session_state.processed_data = st.session_state.original_raw_data.copy()
+        st.success("🔄 Reset processed data to original.")
 
     st.subheader("Processed Data Preview")
-    st.dataframe(processed_data.head())
+    if not st.session_state.processed_data.empty:
+        st.dataframe(st.session_state.processed_data.head())
+    else:
+        st.info("Processed data is empty.")
 
-   
 # Tab 3: Model Selection
 with tab3:
     st.header("🧠 Model Selection")
@@ -400,22 +514,25 @@ with tab3:
         with c3:
             st.write("Z Axis")
             st.table(mdf.query("Axis == 'Z'")[["Variable", "Weight"]])
+
 # Tab 4: Chart
 with tab4:
     st.header("📊 Chart")
     st.markdown("This section will display the 3D bubble chart once data and model selections are made.")
 
-    # Category selection
-    categories = df["Category"].unique().tolist()
-    selected_cats = st.multiselect("Select Categories:", categories, default=categories)
-
-    # Filter data
-    filtered_df = df[df["Category"].isin(selected_cats)]
+    # Category guard
+    if "Category" in df.columns:
+        categories = df["Category"].unique().tolist()
+        selected_cats = st.multiselect("Select Categories:", categories, default=categories)
+        filtered_df = df[df["Category"].isin(selected_cats)]
+    else:
+        st.info("No 'Category' column found; showing all points.")
+        filtered_df = df
 
     # Create bubble chart
     fig = px.scatter(
         filtered_df,
-        x="X", y="Y", size="Z", color="Category",
+        x="X", y="Y", size="Z", color=filtered_df["Category"] if "Category" in filtered_df.columns else None,
         hover_name="Label", size_max=40
     )
 
@@ -440,8 +557,7 @@ with tab4:
         ),
         plot_bgcolor='rgba(0,0,0,0)',
         paper_bgcolor='rgba(0,0,0,0)',
-        height=800,  # Increase chart height for better visibility
-        width=800    # Optional: Force a larger width
+        height=800,
     )
 
     # Show chart
@@ -452,11 +568,7 @@ with tab5:
     st.header("🔍 Results Drivers")
     st.markdown("Explore the key drivers behind results by geography and metric.")
 
-    # ---------- Dummy data (replace with your real data) ----------
-    import pandas as pd
-    import plotly.express as px
-
-    # Map data (lat/lon for 5 fake locations)
+    # Dummy data (replace with your real data)
     map_df = pd.DataFrame({
         "Region": ["Sydney", "Melbourne", "Brisbane", "Perth", "Adelaide"],
         "lat": [-33.8688, -37.8136, -27.4698, -31.9505, -34.9285],
@@ -464,25 +576,22 @@ with tab5:
         "value": [50, 70, 40, 55, 35]
     })
 
-    # Bar chart data
     bar_df = pd.DataFrame({
         "Driver": [f"Driver {i}" for i in range(1, 6)],
         "Contribution": [30, 45, 20, 55, 40]
     })
 
-    # Line chart data
     line_df = pd.DataFrame({
         "Month": [f"2025-{m:02d}" for m in range(1, 13)],
         "Index": [80, 82, 79, 85, 88, 90, 87, 92, 95, 97, 99, 101]
     })
 
-    # Pie chart data
     pie_df = pd.DataFrame({
         "Category": ["A", "B", "C", "D"],
         "Share": [35, 25, 20, 20]
     })
 
-    # ---------- Layout: row 1 (Map | Bar) ----------
+    # Layout: row 1 (Map | Bar)
     c1, c2 = st.columns(2)
 
     with c1:
@@ -504,7 +613,7 @@ with tab5:
         fig_bar.update_layout(yaxis_title="Contribution", xaxis_title="Driver", height=420)
         st.plotly_chart(fig_bar, use_container_width=True)
 
-    # ---------- Layout: row 2 (Line | Pie) ----------
+    # Layout: row 2 (Line | Pie)
     c3, c4 = st.columns(2)
 
     with c3:
@@ -523,12 +632,13 @@ with tab5:
         fig_pie.update_layout(height=420)
         st.plotly_chart(fig_pie, use_container_width=True)
 
- 
-    # Apply dark theme to all plots
-for f in [fig_map, fig_bar, fig_line, fig_pie]:
-    f.update_layout(template="plotly_dark")
+# Apply dark theme to all plots created in Tab 5 (safe even if already dark)
+try:
+    for f in [fig_map, fig_bar, fig_line, fig_pie]:
+        f.update_layout(template="plotly_dark")
+except NameError:
+    # If tab hasn't been rendered or variables not in scope, ignore
+    pass
 
-
-
-###adding in an image
-###st.image(os.path.join(os.getcwd(), "static", "green_red_gradient.png"))
+# Optional image example
+# st.image(os.path.join(os.getcwd(), "static", "green_red_gradient.png"))
