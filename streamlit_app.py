@@ -236,41 +236,49 @@ with tab2:
     st.header("Data Preparation")
 
     st.subheader("Variable Summary & Processing")
+
     processed_data = raw_data.copy()
 
-    for col in raw_data.columns:
-        col1, col2 = st.columns([4, 1])
-        with col1:
-            if np.issubdtype(raw_data[col].dtype, np.number):
-                stats = {
-                    "Type": "Numeric",
-                    "Min": np.nanmin(raw_data[col]),
-                    "Max": np.nanmax(raw_data[col]),
-                    "Mean": np.nanmean(raw_data[col]),
-                    "Std": np.nanstd(raw_data[col])
-                }
-                st.write(f"**{col}**")
-                st.write(f"Type: {stats['Type']}")
-                st.write(f"Min: {stats['Min']:.2f}, Max: {stats['Max']:.2f}, Mean: {stats['Mean']:.2f}, Std: {stats['Std']:.2f}")
-            else:
-                unique_vals = raw_data[col].unique()
-                st.write(f"**{col}**")
-                st.write(f"Type: Categorical")
-                st.write(f"Levels: {', '.join(map(str, unique_vals))}")
+    # Table header
+    header_cols = st.columns([2, 2, 2, 2, 2, 2])
+    headers = ["Variable", "Type", "Min", "Max", "Mean", "Std/Levels", "Process"]
+    for i, h in enumerate(headers):
+        header_cols[i].markdown(f"**{h}**")
 
-        with col2:
-            if np.issubdtype(raw_data[col].dtype, np.number):
-                if st.button(f"Standardize", key=f"std_{col}"):
-                    processed_data[col] = (raw_data[col] - raw_data[col].mean()) / raw_data[col].std()
-                    st.success(f"Standardized {col}")
-            else:
-                if st.button(f"Assign Levels", key=f"lvl_{col}"):
-                    processed_data[col] = raw_data[col].astype('category').cat.codes
-                    st.success(f"Assigned levels to {col}")
+    # Table rows
+    for col in raw_data.columns:
+        row_cols = st.columns([2, 2, 2, 2, 2, 2])
+        if np.issubdtype(raw_data[col].dtype, np.number):
+            stats = {
+                "Type": "Numeric",
+                "Min": np.nanmin(raw_data[col]),
+                "Max": np.nanmax(raw_data[col]),
+                "Mean": np.nanmean(raw_data[col]),
+                "Std": np.nanstd(raw_data[col])
+            }
+            row_cols[0].markdown(f"{col}")
+            row_cols[1].markdown("Numeric")
+            row_cols[2].markdown(f"{stats['Min']:.2f}")
+            row_cols[3].markdown(f"{stats['Max']:.2f}")
+            row_cols[4].markdown(f"{stats['Mean']:.2f}")
+            row_cols[5].markdown(f"{stats['Std']:.2f}")
+            if row_cols[5].button("Standardize", key=f"std_{col}"):
+                processed_data[col] = (raw_data[col] - raw_data[col].mean()) / raw_data[col].std()
+                st.success(f"Standardized {col}")
+        else:
+            unique_vals = raw_data[col].unique()
+            row_cols[0].markdown(f"{col}")
+            row_cols[1].markdown("Categorical")
+            row_cols[2].markdown("")
+            row_cols[3].markdown("")
+            row_cols[4].markdown("")
+            row_cols[5].markdown(f"{', '.join(map(str, unique_vals))}")
+            if row_cols[5].button("Assign Levels", key=f"lvl_{col}"):
+                processed_data[col] = raw_data[col].astype('category').cat.codes
+                st.success(f"Assigned levels to {col}")
 
     st.subheader("Processed Data Preview")
     st.dataframe(processed_data.head())
-    
 # Tab 3: Model Selection
 with tab3:
     st.header("🧠 Model Selection")
